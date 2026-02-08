@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { AlertsList } from "@/components/dashboard/AlertsList";
@@ -7,6 +8,7 @@ import { QuestionInput } from "@/components/QuestionInput";
 import { ResponseDisplay } from "@/components/ResponseDisplay";
 import { useFacilities } from "@/hooks/useFacilities";
 import { useToast } from "@/hooks/use-toast";
+import type { Alert } from "@/types/healthcare";
 import {
   Building2,
   MapPinOff,
@@ -26,6 +28,7 @@ interface Citation {
 }
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { facilities, loading, stats, regionStats } = useFacilities();
   const [response, setResponse] = useState<string | null>(null);
   const [audioBase64, setAudioBase64] = useState<string | null>(null);
@@ -254,8 +257,20 @@ const Dashboard = () => {
             <AlertsList
               alerts={stats.criticalAlerts}
               maxHeight="280px"
+              onViewAlert={(alert: Alert) => {
+                if (alert.facilityId) {
+                  navigate(`/facilities?id=${alert.facilityId}`);
+                } else if (alert.region) {
+                  navigate(`/map?region=${encodeURIComponent(alert.region)}`);
+                }
+              }}
             />
-            <RegionOverview regions={regionStats} />
+            <RegionOverview 
+              regions={regionStats} 
+              onSelectRegion={(region: string) => {
+                navigate(`/map?region=${encodeURIComponent(region)}`);
+              }}
+            />
           </div>
         </div>
       </div>
